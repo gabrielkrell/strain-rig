@@ -10,3 +10,7 @@ Components:
 Interaction over serial:
  - Input `m123456.789`: change setpoint to input number (in mm?).
  - Input `z`: Zero the force sensor.
+
+## To compile:
+1. Install the [Queuetue HX711 library](https://github.com/queuetue/Q2-HX711-Arduino-Library/) (Library Manager > Queuetue HX711 library).
+2. Install the [Arduino-PID-Library](https://github.com/br3ttb/Arduino-PID-Library) (Library Manager > PID by Brett Beauregard)
