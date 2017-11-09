@@ -21,14 +21,11 @@ static int loadB = A3;
 
 static int stepConst = 3771; //divide by 100 before using
 
-
 volatile int lastEncoded = 0;
 volatile long encoderValue = 0;
 long lastencoderValue = 0;
 int lastMSB = 0;
 int lastLSB = 0;
-
-int motorSpeed = 0;
 
 double serialNumBuffer = 0;
 char serialCharBuffer = 'X';
