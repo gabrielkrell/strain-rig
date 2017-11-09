@@ -30,6 +30,8 @@ int lastLSB = 0;
 double serialNumBuffer = 0;
 char serialCharBuffer = 'X';
 
+unsigned long timeStarted = 0;
+
 #include <PID_v1.h>
 double input, output, output2, finalOutput;
 double setpoint = 0;
@@ -64,7 +66,7 @@ void setup() {
 
 void loop() {
   // get variables all at once to avoid waiting for serial buffer to clear
-  unsigned long time_ = micros();
+  unsigned long time_ = micros() - timeStarted;
   double pos = encoderValue/37.71;
   double force = readForce(zeroValue);
   Serial.print("Time (micros): ");
@@ -144,6 +146,10 @@ void interpretCommand() {
     serialNumBuffer = Serial.parseFloat();
 
     if (serialCharBuffer == 'm') {
+      if (!timeStarted) {
+        // on first move, update start time
+        timeStarted = micros();
+      }
       setpoint = (serialNumBuffer * stepConst ) / 100;
       serialCharBuffer = 'X';
 //      Serial.println("Moved ");
