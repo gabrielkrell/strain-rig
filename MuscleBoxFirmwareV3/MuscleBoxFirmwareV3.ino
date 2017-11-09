@@ -2,7 +2,6 @@
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A2, A3);
-long int zeroAvgValue[3];
 long int zeroValue;
 
 static int downPin = 8;
@@ -124,10 +123,7 @@ float readForce(long int zeroValue) {
 }
 
 void zeroScale() {
-  zeroAvgValue[1] = hx711.read();
-  zeroAvgValue[2] = hx711.read();
-  zeroAvgValue[3] = hx711.read();
-  zeroValue = (zeroAvgValue[1] + zeroAvgValue[2] + zeroAvgValue[3]) / 3;
+  zeroValue = (hx711.read() + hx711.read() + hx711.read())/3;
   Serial.println("zeroing");
 }
 
