@@ -1,3 +1,5 @@
+#define DEBUG
+
 #include <Q2HX711.h>
 Q2HX711 hx711(A2, A3);
 long int zeroAvgValue[3];
@@ -65,18 +67,26 @@ void setup() {
 }
 
 void loop() {
-  Serial.println();
-
-  Serial.print("Current Position (um): ");
-  Serial.print(encoderValue/37.71);
+  // get variables all at once to avoid waiting for serial buffer to clear
+  unsigned long time_ = micros();
+  double pos = encoderValue/37.71;
+  double force = readForce(zeroValue);
+  Serial.print("Time (micros): ");
+  Serial.print(time_);
+  Serial.print(" Current Position (um): ");
+  Serial.print(pos);
   Serial.print(" Force (g): ");
-  Serial.print(readForce(zeroValue));
-//  Serial.print(" ");
-//  Serial.print(setpoint/37.71);
+  Serial.print(force);
+
+  #ifdef DEBUG
+  Serial.print(" ");
+  Serial.print(setpoint/37.71);
   Serial.print(" ");
   Serial.print(output);
   Serial.print(" ");
   Serial.print(output2);
+  #endif
+  Serial.println();
 
   interpretCommand();
 
