@@ -22,11 +22,7 @@ static int loadB = A3;
 
 static int stepConst = 3771; //divide by 100 before using
 
-volatile int lastEncoded = 0;
 volatile long encoderValue = 0;
-long lastencoderValue = 0;
-int lastMSB = 0;
-int lastLSB = 0;
 
 double serialNumBuffer = 0;
 char serialCharBuffer = 'X';
@@ -120,6 +116,10 @@ void zeroScale() {
 }
 
 void updateEncoder() {
+  // much code copied from 
+  // http://bildr.org/2012/08/rotary-encoder-arduino/
+  volatile static int lastEncoded = 0;
+
   int MSB = digitalRead(encA); //MSB = most significant bit
   int LSB = digitalRead(encB); //LSB = least significant bit
 
