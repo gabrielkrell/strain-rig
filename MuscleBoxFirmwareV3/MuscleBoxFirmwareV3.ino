@@ -2,6 +2,7 @@
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A2, A3);
+float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
 long int zeroValue;
 
 static int downPin = 8;
@@ -109,16 +110,8 @@ void moveMotor() {
 }
 
 float readForce(long int zeroValue) {
-  //720000 = 50.00g
-  long int sensorVal;
-  float returnVal;
-
-  float scaleConstant = 720000 / 50;
-
-  sensorVal = hx711.read() - zeroValue;
-  returnVal = sensorVal / scaleConstant;
-
-  return returnVal;
+  long int sensorVal = hx711.read() - zeroValue;
+  return (float)(sensorVal / TICKS_PER_GRAM);
 }
 
 void zeroScale() {
