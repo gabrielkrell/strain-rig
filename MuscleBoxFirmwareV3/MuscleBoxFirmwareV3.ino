@@ -116,19 +116,24 @@ void zeroScale() {
 }
 
 void updateEncoder() {
-  // much code copied from 
-  // http://bildr.org/2012/08/rotary-encoder-arduino/
   volatile static int lastEncoded = 0;
+  // Encoder states are Gray code: 00-01-11-10. "transitions" tells
+  // which way we're moving. For example,
+  // transitions[0b00][0b01] == 1 (00 to 01 is "forward") and
+  // transitions[0b01][0b00] == -1 (01 to 00 is other direction).
+  // Illegal changes are 0s (no change). For more, see
+  // See http://bildr.org/2012/08/rotary-encoder-arduino/
+  static const int transitions[4][4] = {
+    { 0,  1, -1,  0},
+    {-1,  0,  0,  1},
+    { 1,  0,  0, -1},
+    { 0, -1,  1,  0}};
 
-  int MSB = digitalRead(encA); //MSB = most significant bit
-  int LSB = digitalRead(encB); //LSB = least significant bit
+  byte MSB = digitalRead(encA); // most significant bit
+  byte LSB = digitalRead(encB); // least significant bit
 
   int encoded = (MSB << 1) | LSB; //converting the 2 pin value to single number
-  int sum  = (lastEncoded << 2) | encoded; //adding it to the previous encoded value
-
-  if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) encoderValue ++;
-  if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) encoderValue --;
-
+  encoderValue -= transitions[lastEncoded][encoded];
   lastEncoded = encoded; //store this value for next time
 }
 
