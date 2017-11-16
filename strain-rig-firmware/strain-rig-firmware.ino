@@ -1,7 +1,7 @@
 #define DEBUG
 
 #include <Q2HX711.h>
-Q2HX711 hx711(A2, A3);
+Q2HX711 hx711(A0, A1);
 float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
 long int zeroValue;
 
