@@ -18,9 +18,7 @@ static int    TICKS_PER_CM = 4000; // 10/4*200*8
 static double CMS_PER_TICK = 0.0025; // (1/4000)
 static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
-
-double serialNumBuffer = 0;
-char serialCharBuffer = 'X';
+double ABS_MAX_TRAVEL = 11.7; // max travel length (cm)
 
 unsigned long timeStarted = 0;
 
@@ -99,19 +97,28 @@ void zeroScale() {
 
 void interpretCommand() {
   if (Serial.available() > 0) {
-    serialCharBuffer = Serial.read();
-    serialNumBuffer = Serial.parseFloat();
-    if (serialCharBuffer == 'm') {
-      if (!timeStarted) {
-        // on first move, update start time
-        timeStarted = micros();
+    char letter = Serial.read();
+    switch(letter) {
+      case 'm':
+      case 'M': {
+        if (!Serial.available()) {
+          break; // missing position
+        }
+        double pos = Serial.parseFloat();
+        if (abs(pos) >= ABS_MAX_TRAVEL) {
+          break; // too far
+        }
+        if (!timeStarted) {
+          // on first move, update start time
+          timeStarted = micros();
+        }
+        desiredPosCM = pos;
+        desiredPosTicks = TICKS_PER_CM * desiredPosCM;
+        break;
       }
-      desiredPosCM = serialNumBuffer;
-      desiredPosTicks = TICKS_PER_CM * desiredPosCM;
-      serialCharBuffer = 'X';
-    }
-    else if (serialCharBuffer == 'z') {
-      zeroScale();
+      case 'z':
+      case 'Z':
+        zeroScale();
     }
   }
 }
