@@ -16,10 +16,8 @@ volatile long int stepperPosTicks;
 //                 200 steps / 1 revolution, 8 microsteps / 1 step
 static int    TICKS_PER_CM = 4000; // 10/4*200*8
 static double CMS_PER_TICK = 0.0025; // (1/4000)
-static int TURNAROUND_DELAY_CYCLES = 1000; // can't instantly turn around or motor stalls
+static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
-static int loadA = A2;
-static int loadB = A3;
 
 double serialNumBuffer = 0;
 char serialCharBuffer = 'X';
@@ -37,11 +35,11 @@ void setup() {
 }
 
 void loop() {
-  // get variables all at once to avoid waiting for serial buffer to clear
+  // get variables first to avoid serial buffer problems, interrupts
   unsigned long time_ = micros() - timeStarted;
   long int ticks = stepperPosTicks; // copy volatile var
   double force = readForce(zeroValue);
-  updateStepperPos();
+  stepperPosCM = .00025 * ticks;
   
   Serial.print("Time (micros): ");
   Serial.print(time_);
@@ -63,31 +61,30 @@ void loop() {
 }
 
 void motorISR() {
-  static int motorState = LOW;
-  static int nextTick;
   static int turnaround_delay = 0;
   if (turnaround_delay > 0) {
-    // wait a bit before turning around
-    turnaround_delay--;
+    turnaround_delay--; // wait a bit before turning around
     return;
   }
-  // choose next direction (if needed) or exit (if not)
+  
+  static int nextTick;
   if (stepperPosTicks < desiredPosTicks) {
-    if (nextTick == -1) { turnaround_delay = TURNAROUND_DELAY_CYCLES; }
+    if (nextTick == -1) {turnaround_delay = TURNAROUND_DELAY_CYCLES;}
     nextTick = 1;
   } else if (stepperPosTicks > desiredPosTicks) {
-    if (nextTick == 1) { turnaround_delay = TURNAROUND_DELAY_CYCLES; }
+    if (nextTick == 1) {turnaround_delay = TURNAROUND_DELAY_CYCLES;}
     nextTick = -1;
   } else {
     nextTick = 0;
     return;
   }
+
   digitalWrite(MOTOR_DIR_PIN, nextTick == 1); // apply direction
+
+  static int motorState = HIGH;
   motorState = !motorState;
   digitalWrite(MOTOR_STEP_PIN, motorState); // flip clock
-  if (motorState) { // on rising edge, record change
-    stepperPosTicks += nextTick;
-  }
+  if (motorState) {stepperPosTicks += nextTick;} // on rising edge, record change
 }
 
 float readForce(long int zeroValue) {
@@ -97,15 +94,13 @@ float readForce(long int zeroValue) {
 
 void zeroScale() {
   zeroValue = (hx711.read() + hx711.read() + hx711.read())/3;
-  Serial.println("zeroing");
+  Serial.println("Zeroed scale.");
 }
 
 void interpretCommand() {
-
   if (Serial.available() > 0) {
     serialCharBuffer = Serial.read();
     serialNumBuffer = Serial.parseFloat();
-
     if (serialCharBuffer == 'm') {
       if (!timeStarted) {
         // on first move, update start time
@@ -119,9 +114,5 @@ void interpretCommand() {
       zeroScale();
     }
   }
-}
-
-void updateStepperPos() {
-  stepperPosCM = .00025 * stepperPosTicks;
 }
 
