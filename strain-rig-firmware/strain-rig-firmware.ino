@@ -16,6 +16,7 @@ volatile long int stepperPosTicks;
 //                 200 steps / 1 revolution, 8 microsteps / 1 step
 static int    TICKS_PER_CM = 4000; // 10/4*200*8
 static double CMS_PER_TICK = 0.0025; // (1/4000)
+static int TURNAROUND_DELAY_CYCLES = 1000; // can't instantly turn around or motor stalls
 
 static int loadA = A2;
 static int loadB = A3;
@@ -64,12 +65,18 @@ void loop() {
 void motorISR() {
   static int motorState = LOW;
   static int nextTick;
+  static int turnaround_delay = 0;
+  if (turnaround_delay > 0) {
+    // wait a bit before turning around
+    turnaround_delay--;
     return;
   }
   // choose next direction (if needed) or exit (if not)
   if (stepperPosTicks < desiredPosTicks) {
+    if (nextTick == -1) { turnaround_delay = TURNAROUND_DELAY_CYCLES; }
     nextTick = 1;
   } else if (stepperPosTicks > desiredPosTicks) {
+    if (nextTick == 1) { turnaround_delay = TURNAROUND_DELAY_CYCLES; }
     nextTick = -1;
   } else {
     nextTick = 0;
