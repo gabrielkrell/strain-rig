@@ -1,17 +1,17 @@
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A0, A1);
 float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
 long int zeroValue;
 
-
 static int MOTOR_STEP_PIN = 13;
 static int MOTOR_DIR_PIN = 12;
 
-double stepperPosCM, desiredPosCM;
-long int stepperPosTicks, desiredPosTicks;
-int nextTick = 0;
+#include <TimerThree.h>
+static double stepperPosCM, desiredPosCM;
+volatile long int stepperPosTicks;
+         long int desiredPosTicks;
 // tick constants: 10 mm / cm, 1 revolution / 4 mm linear movement,
 //                 200 steps / 1 revolution, 8 microsteps / 1 step
 static int    TICKS_PER_CM = 4000; // 10/4*200*8
@@ -31,50 +31,56 @@ void setup() {
   Serial.begin(115200);
   delay(250);
   zeroScale();
+  Timer3.initialize(80);
+  Timer3.attachInterrupt(motorISR);
 }
 
 void loop() {
   // get variables all at once to avoid waiting for serial buffer to clear
   unsigned long time_ = micros() - timeStarted;
+  long int ticks = stepperPosTicks; // copy volatile var
   double force = readForce(zeroValue);
+  updateStepperPos();
+  
   Serial.print("Time (micros): ");
   Serial.print(time_);
-  Serial.print(" Current Position (cm): ");
+  Serial.print(" Position (cm): ");
   Serial.print(stepperPosCM);
   Serial.print(" Force (g): ");
   Serial.print(force);
   #ifdef DEBUG_MODE
-   Serial.print(" desiredPosCM: ");
-   Serial.print(desiredPosCM);
-   Serial.print(" stepperPosTicks: ");
-  Serial.print(stepperPosTicks);
-   Serial.print(" desiredPosTicks: ");
-  Serial.println(desiredPosTicks);
+    Serial.print(" Target Pos. (cm): ");
+    Serial.print(desiredPosCM);
+    Serial.print(" Ticks: ");
+    Serial.print(ticks);
+    Serial.print(" Target Ticks: ");
+    Serial.println(desiredPosTicks);
   #endif
   Serial.println();
 
   interpretCommand();
-  updateMotorDir();
-  moveMotor();
 }
 
-void moveMotor() {
-  if (nextTick == 0) {
+void motorISR() {
+  static int motorState = LOW;
+  static int nextTick;
     return;
   }
-  digitalWrite(MOTOR_DIR_PIN, nextTick == 1);
-  digitalWrite(MOTOR_STEP_PIN, LOW);
-  delayMicroseconds(65);
-  digitalWrite(MOTOR_STEP_PIN, HIGH); // motor moves on rising edge
-  delayMicroseconds(65);
-  
-  stepperPosTicks += nextTick;
-  // motor driver is 8 ticks / step
-  // stepper motor is 200 steps / revolution
-  // screw has "4mm lead", or .4cm travel / revolution
-  // x/8/200*.4 = .016x
-  // 10/4*200/8
-  stepperPosCM = .00025 * stepperPosTicks;
+  // choose next direction (if needed) or exit (if not)
+  if (stepperPosTicks < desiredPosTicks) {
+    nextTick = 1;
+  } else if (stepperPosTicks > desiredPosTicks) {
+    nextTick = -1;
+  } else {
+    nextTick = 0;
+    return;
+  }
+  digitalWrite(MOTOR_DIR_PIN, nextTick == 1); // apply direction
+  motorState = !motorState;
+  digitalWrite(MOTOR_STEP_PIN, motorState); // flip clock
+  if (motorState) { // on rising edge, record change
+    stepperPosTicks += nextTick;
+  }
 }
 
 float readForce(long int zeroValue) {
@@ -101,14 +107,6 @@ void interpretCommand() {
       desiredPosCM = serialNumBuffer;
       desiredPosTicks = TICKS_PER_CM * desiredPosCM;
       serialCharBuffer = 'X';
-//      Serial.println("Moved ");
-//      if (serialNumBuffer < 0) {
-//        Serial.print("down ");
-//      }
-//      else {
-//        Serial.print("up ");
-//      }
-//      Serial.print(serialNumBuffer); Serial.print("mm"); Serial.println();
     }
     else if (serialCharBuffer == 'z') {
       zeroScale();
@@ -116,12 +114,7 @@ void interpretCommand() {
   }
 }
 
-void updateMotorDir() {
-  if (stepperPosTicks < desiredPosTicks) {
-    nextTick = 1;
-  } else if (stepperPosTicks > desiredPosTicks) {
-    nextTick = -1;
-  } else {
-    nextTick = 0;
-  }
+void updateStepperPos() {
+  stepperPosCM = .00025 * stepperPosTicks;
 }
+
