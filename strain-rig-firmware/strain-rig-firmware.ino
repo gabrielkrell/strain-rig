@@ -1,108 +1,80 @@
-#define DEBUG
+#define DEBUG_MODE
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A0, A1);
 float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
 long int zeroValue;
 
-static int downPin = 8;
-static int upPin = 5;
-static int encA = 3;
-static int encB = 2;
+
+static int MOTOR_STEP_PIN = 13;
+static int MOTOR_DIR_PIN = 12;
+
+double stepperPosCM, desiredPosCM;
+long int stepperPosTicks, desiredPosTicks;
+int nextTick = 0;
+// tick constants: 10 mm / cm, 1 revolution / 4 mm linear movement,
+//                 200 steps / 1 revolution, 8 microsteps / 1 step
+static int    TICKS_PER_CM = 4000; // 10/4*200*8
+static double CMS_PER_TICK = 0.0025; // (1/4000)
+
 static int loadA = A2;
 static int loadB = A3;
-
-//PWM values are 45-255
-//23,945.76 steps per 1 rev
-//40 rev / 1 inch
-//957,830.4 steps / inch
-// 25.4 mm / inch
-// 37,709.86 steps per mm
-//37.71 steps per um
-
-static int stepConst = 3771; //divide by 100 before using
-
-volatile long encoderValue = 0;
 
 double serialNumBuffer = 0;
 char serialCharBuffer = 'X';
 
 unsigned long timeStarted = 0;
 
-#include <PID_v1.h>
-double input, output, output2, finalOutput;
-double setpoint = 0;
-PID pid(&input, &output, &setpoint, 0.25, 0, 0, DIRECT);
-PID pid2(&input, &output2, &setpoint, 0.25, 0, 0, REVERSE);
-
 void setup() {
-  pinMode(upPin, OUTPUT);
-  pinMode(downPin, OUTPUT);
-  digitalWrite(upPin, LOW);
-  digitalWrite(downPin, LOW);
-
-  pinMode(encA, INPUT_PULLUP);
-  pinMode(encB, INPUT_PULLUP);
-  attachInterrupt(0, updateEncoder, CHANGE);
-  attachInterrupt(1, updateEncoder, CHANGE);
-
-  Serial.begin(9600);
-
+  pinMode(MOTOR_STEP_PIN, OUTPUT);
+  pinMode(MOTOR_DIR_PIN, OUTPUT);
+  Serial.begin(115200);
   delay(250);
-
   zeroScale();
-  encoderValue = 0;
-
-  input = (double)encoderValue;
-  pid.SetMode(AUTOMATIC);
-  pid.SetSampleTime(10); //pid recompute interval in ms
-  pid2.SetMode(AUTOMATIC);
-  pid2.SetSampleTime(10);
-
 }
 
 void loop() {
   // get variables all at once to avoid waiting for serial buffer to clear
   unsigned long time_ = micros() - timeStarted;
-  double pos = encoderValue/37.71;
   double force = readForce(zeroValue);
   Serial.print("Time (micros): ");
   Serial.print(time_);
-  Serial.print(" Current Position (um): ");
-  Serial.print(pos);
+  Serial.print(" Current Position (cm): ");
+  Serial.print(stepperPosCM);
   Serial.print(" Force (g): ");
   Serial.print(force);
-
-  #ifdef DEBUG
-  Serial.print(" ");
-  Serial.print(setpoint/37.71);
-  Serial.print(" ");
-  Serial.print(output);
-  Serial.print(" ");
-  Serial.print(output2);
+  #ifdef DEBUG_MODE
+   Serial.print(" desiredPosCM: ");
+   Serial.print(desiredPosCM);
+   Serial.print(" stepperPosTicks: ");
+  Serial.print(stepperPosTicks);
+   Serial.print(" desiredPosTicks: ");
+  Serial.println(desiredPosTicks);
   #endif
   Serial.println();
 
   interpretCommand();
-
-  input = (double)encoderValue;
-  pid.Compute();
-  pid2.Compute();
-
-  analogWrite(upPin, output);
-  analogWrite(downPin, output2);
-
+  updateMotorDir();
+  moveMotor();
 }
 
 void moveMotor() {
-  finalOutput = output - output2;
-
-  if (finalOutput > 0) {
-    analogWrite(upPin, finalOutput);
-    digitalWrite(downPin, LOW);
+  if (nextTick == 0) {
+    return;
   }
-  analogWrite(downPin, output2);
-  digitalWrite(upPin, LOW);
+  digitalWrite(MOTOR_DIR_PIN, nextTick == 1);
+  digitalWrite(MOTOR_STEP_PIN, LOW);
+  delayMicroseconds(65);
+  digitalWrite(MOTOR_STEP_PIN, HIGH); // motor moves on rising edge
+  delayMicroseconds(65);
+  
+  stepperPosTicks += nextTick;
+  // motor driver is 8 ticks / step
+  // stepper motor is 200 steps / revolution
+  // screw has "4mm lead", or .4cm travel / revolution
+  // x/8/200*.4 = .016x
+  // 10/4*200/8
+  stepperPosCM = .00025 * stepperPosTicks;
 }
 
 float readForce(long int zeroValue) {
@@ -113,28 +85,6 @@ float readForce(long int zeroValue) {
 void zeroScale() {
   zeroValue = (hx711.read() + hx711.read() + hx711.read())/3;
   Serial.println("zeroing");
-}
-
-void updateEncoder() {
-  volatile static int lastEncoded = 0;
-  // Encoder states are Gray code: 00-01-11-10. "transitions" tells
-  // which way we're moving. For example,
-  // transitions[0b00][0b01] == 1 (00 to 01 is "forward") and
-  // transitions[0b01][0b00] == -1 (01 to 00 is other direction).
-  // Illegal changes are 0s (no change). For more, see
-  // See http://bildr.org/2012/08/rotary-encoder-arduino/
-  static const int transitions[4][4] = {
-    { 0,  1, -1,  0},
-    {-1,  0,  0,  1},
-    { 1,  0,  0, -1},
-    { 0, -1,  1,  0}};
-
-  byte MSB = digitalRead(encA); // most significant bit
-  byte LSB = digitalRead(encB); // least significant bit
-
-  int encoded = (MSB << 1) | LSB; //converting the 2 pin value to single number
-  encoderValue -= transitions[lastEncoded][encoded];
-  lastEncoded = encoded; //store this value for next time
 }
 
 void interpretCommand() {
@@ -148,7 +98,8 @@ void interpretCommand() {
         // on first move, update start time
         timeStarted = micros();
       }
-      setpoint = (serialNumBuffer * stepConst ) / 100;
+      desiredPosCM = serialNumBuffer;
+      desiredPosTicks = TICKS_PER_CM * desiredPosCM;
       serialCharBuffer = 'X';
 //      Serial.println("Moved ");
 //      if (serialNumBuffer < 0) {
@@ -165,4 +116,12 @@ void interpretCommand() {
   }
 }
 
-
+void updateMotorDir() {
+  if (stepperPosTicks < desiredPosTicks) {
+    nextTick = 1;
+  } else if (stepperPosTicks > desiredPosTicks) {
+    nextTick = -1;
+  } else {
+    nextTick = 0;
+  }
+}
