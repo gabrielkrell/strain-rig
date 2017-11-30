@@ -77,7 +77,7 @@ void motorISR() {
     return;
   }
 
-  digitalWrite(MOTOR_DIR_PIN, nextTick == 1); // apply direction
+  digitalWrite(MOTOR_DIR_PIN, nextTick == -1); // apply direction
 
   static int motorState = HIGH;
   motorState = !motorState;
