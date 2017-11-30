@@ -34,7 +34,7 @@ void setup() {
 
 void loop() {
   // get variables first to avoid serial buffer problems, interrupts
-  unsigned long time_ = micros() - timeStarted;
+  unsigned long time_ = timeStarted > 0 ? micros() - timeStarted : 0;
   long int ticks = stepperPosTicks; // copy volatile var
   double force = readForce(zeroValue);
   stepperPosCM = .00025 * ticks;
