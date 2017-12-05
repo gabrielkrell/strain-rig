@@ -36,6 +36,8 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 2. Make sure your user is in the `dialout` group, which lets you use serial devices. For example:	
 
    `sudo usermod -a -G dialout gabe`
+
+   You may need to log out and log in again for this to take effect.
 3. Now, set the tty parameters with `stty` (replacing `/dev/ttyACM0` with whatever your device is called):
 
    ```
