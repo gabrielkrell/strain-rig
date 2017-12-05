@@ -18,6 +18,33 @@ Interaction over serial:
 ## To compile:
 1. Install the [Queuetue HX711 library](https://github.com/queuetue/Q2-HX711-Arduino-Library/) (Library Manager > Queuetue HX711 library).
 
+## Linux usage instructions
+
+The actual UI isn't done yet, but you can still use it with the command line. To use on Linux, you can install the Arduino IDE (probably), or just use built-in terminal stuff:
+
+1. Plug in the Arduino, and figure out which port it's on:
+   `$ dmesg | grep tty`
+  
+   Example output:
+   ```
+   gabe@dormserver:~$ dmesg | grep tty
+   [    0.000000] console [tty0] enabled
+   [    1.341091] tty tty2: hash matches
+   [1249326.491407] cdc_acm 3-2:1.0: ttyACM0: USB ACM device
+   ```
+   (Here, the Arduino will be `/dev/ttyACM0`.)
+2. Make sure your user is in the `dialout` group, which lets you use serial devices.
+   `sudo usermod -a -G dialout gabe`
+3. Now, set the tty parameters with `stty` (replacing `/dev/ttyACM0` with whatever your device is called):
+
+   `sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl`
+4. Now, you can write to Arduino like you would any file or device. For example, to move to the 3cm position:
+
+   `echo "m3" > /dev/ttyACM0`
+5. One way to view the Arduino's output is
+
+   `cat /dev/ttyACM0`
+
 ## Old version notes
 
 Components:
