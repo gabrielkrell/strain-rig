@@ -12,7 +12,7 @@ Parts:
  - [Linear screw](https://www.smw3d.com/sfu-1204-ball-screw-and-flanged-nut/): 4mm lead. See [ball screw guide](http://www.anaheimautomation.com/manuals/forms/ball-screw-guide.php#sthash.fK6LyzyL.WL0C372z.dpbs).
 
 Interaction over serial:
- - Input `m123456.789`: change setpoint to input number in cm.
+ - Input `m12.3456789`: change setpoint to input number in cm.
  - Input `z`: Zero the force sensor.
 
 ## To compile:
