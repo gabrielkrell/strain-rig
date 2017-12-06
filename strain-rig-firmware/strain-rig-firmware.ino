@@ -25,7 +25,7 @@ static int    TICKS_PER_CM = 4000; // 10/4*200*8
 static double CMS_PER_TICK = 0.0025; // (1/4000)
 static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
-double ABS_MAX_TRAVEL = 11.7; // max travel length (cm)
+double ABS_MAX_TRAVEL = 10.3; // max travel length (cm)
 
 unsigned long timeStarted = 0;
 
