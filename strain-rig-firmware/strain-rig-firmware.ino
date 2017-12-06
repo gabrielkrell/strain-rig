@@ -5,6 +5,13 @@ Q2HX711 hx711(A0, A1);
 float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
 long int zeroValue;
 
+static int LIMIT_SWITCH_UP = 2;
+static int LIMIT_SWITCH_UP_5V = 3;
+static int LIMIT_SWITCH_UP_0V = 4;
+static int LIMIT_SWITCH_DN = 5;
+static int LIMIT_SWITCH_DN_5V = 6;
+static int LIMIT_SWITCH_DN_0V = 7;
+
 static int MOTOR_STEP_PIN = 13;
 static int MOTOR_DIR_PIN = 12;
 
@@ -28,6 +35,12 @@ void setup() {
   Serial.begin(115200);
   delay(250);
   zeroScale();
+  pinMode(LIMIT_SWITCH_UP, INPUT);
+  pinMode(LIMIT_SWITCH_DN, INPUT);
+  digitalWrite(LIMIT_SWITCH_UP_5V, HIGH);
+  digitalWrite(LIMIT_SWITCH_UP_0V, LOW);
+  digitalWrite(LIMIT_SWITCH_DN_5V, HIGH);
+  digitalWrite(LIMIT_SWITCH_DN_0V, LOW);
   Timer3.initialize(80);
   Timer3.attachInterrupt(motorISR);
 }
@@ -69,9 +82,11 @@ void motorISR() {
   if (stepperPosTicks < desiredPosTicks) {
     if (nextTick == -1) {turnaround_delay = TURNAROUND_DELAY_CYCLES;}
     nextTick = 1;
+//    if (!digitalRead(LIMIT_SWITCH_UP)) {return;}
   } else if (stepperPosTicks > desiredPosTicks) {
     if (nextTick == 1) {turnaround_delay = TURNAROUND_DELAY_CYCLES;}
     nextTick = -1;
+//    if (!digitalRead(LIMIT_SWITCH_DN)) {return;}
   } else {
     nextTick = 0;
     return;
