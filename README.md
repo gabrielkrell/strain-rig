@@ -62,3 +62,7 @@ Interaction over serial:
  - Input `z`: Zero the force sensor.
 
 Extra compilation steps: install the [Arduino-PID-Library](https://github.com/br3ttb/Arduino-PID-Library) (Library Manager > PID by Brett Beauregard)
+
+## Notes on calibration:
+
+The HX711 is a 24-bit ADC, which, in our application, measures voltage from the load cell up to ±20mV. The largest signed 24-bit int is 8388607. Thus, a change of 1 from hx711.read() corresponds to (1/8388607) volts.  For convenience, this unit is called "ticks".
