@@ -2,7 +2,7 @@
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A0, A1);
-float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
+float TICKS_PER_GRAM = 983.3473874; // experimentally determined
 long int zeroValue;
 
 static int MOTOR_STEP_PIN = 13;
