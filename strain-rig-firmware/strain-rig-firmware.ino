@@ -43,8 +43,7 @@ void loop() {
   Serial.print(time_);
   Serial.print(" Position (cm): ");
   Serial.print(stepperPosCM);
-//  Serial.print(" Force (g): ");
-  Serial.print(" Force (ticks): ");
+  Serial.print(" Force (g): ");
   Serial.print(force);
   #ifdef DEBUG_MODE
     Serial.print(" Target Pos. (cm): ");
@@ -88,8 +87,7 @@ void motorISR() {
 
 float readForce(long int zeroValue) {
   long int sensorVal = hx711.read() - zeroValue;
-  return sensorVal;
-//  return (float)(sensorVal / TICKS_PER_GRAM);
+  return (float)(sensorVal / TICKS_PER_GRAM);
 }
 
 void zeroScale() {
