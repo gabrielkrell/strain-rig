@@ -46,12 +46,15 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 4. Now that the Arduino is attached, start saving the output in the background.  You can read from `/dev/ttyACM0` (or whatever the device is) like a normal file.  For example:
 
    `cat /dev/ttyACM0 > output.txt &`
-5. You can write to the Arduino like you would any file or device. For example, to move to the 3cm position:
+5. You can check the latest output with `tail`:
+
+   `tail output.txt`
+6. You can write to the Arduino like you would any file or device. For example, to move to the 3cm position:
 
    `echo "m3" > /dev/ttyACM0`
 
    As the rig starts moving, you should see the green LED on the front turn on.
-6. To exit, run `fg` to bring the `cat` task to the foreground, and kill it with Control+C.  The output from this session will be saved in the file you specified in step 4.
+7. To exit, run `fg` to bring the `cat` task to the foreground, and kill it with Control+C.  The output from this session will be saved in the file you specified in step 4.
 
 
 Here's an example session in full:
@@ -66,6 +69,11 @@ gabe@dormserver:~$ cat /dev/ttyACM0 > output.txt &
 [1] 30271
 gabe@dormserver:~$ echo "z" > /dev/ttyACM0
 gabe@dormserver:~$ echo "m1" > /dev/ttyACM0
+gabe@dormserver:~$ tail testoutput.txtgabe@dormserver:~$ tail testoutput.txt
+Time (micros): 2863788 Position (cm): 1.00 Force (g): 0.17
+Time (micros): 2956144 Position (cm): 1.00 Force (g): 0.14
+[...]
+Time (micros): 3695104 Position (cm): 1.00 Force (g): 0.19
 gabe@dormserver:~$ echo "m2" > /dev/ttyACM0
 gabe@dormserver:~$ echo "m5.9" > /dev/ttyACM0
 gabe@dormserver:~$ echo "m0" > /dev/ttyACM0
