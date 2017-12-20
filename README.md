@@ -43,12 +43,37 @@ The actual UI isn't done yet, but you can still use it with the command line. To
    ```
    sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl
    ```
-4. Now, you can write to Arduino like you would any file or device. For example, to move to the 3cm position:
+4. Now that the Arduino is attached, start saving the output in the background.  You can read from `/dev/ttyACM0` (or whatever the device is) like a normal file.  For example:
+
+   `cat /dev/ttyACM0 > output.txt &`
+5. You can write to the Arduino like you would any file or device. For example, to move to the 3cm position:
 
    `echo "m3" > /dev/ttyACM0`
-5. One way to view the Arduino's output is
 
-   `cat /dev/ttyACM0`
+   As the rig starts moving, you should see the green LED on the front turn on.
+6. To exit, run `fg` to bring the `cat` task to the foreground, and kill it with Control+C.  The output from this session will be saved in the file you specified in step 4.
+
+
+Here's an example session in full:
+
+```
+gabe@dormserver:~$ dmesg | grep tty
+[    0.000000] console [tty0] enabled
+[459805.013211] cdc_acm 3-2:1.0: ttyACM0: USB ACM device
+gabe@dormserver:~$ sudo usermod -a -G dialout gabe
+gabe@dormserver:~$ sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl
+gabe@dormserver:~$ cat /dev/ttyACM0 > output.txt &
+[1] 30271
+gabe@dormserver:~$ echo "z" > /dev/ttyACM0
+gabe@dormserver:~$ echo "m1" > /dev/ttyACM0
+gabe@dormserver:~$ echo "m2" > /dev/ttyACM0
+gabe@dormserver:~$ echo "m5.9" > /dev/ttyACM0
+gabe@dormserver:~$ echo "m0" > /dev/ttyACM0
+gabe@dormserver:~$ fg
+cat /dev/ttyACM0 > output.txt
+^C
+gabe@dormserver:~$ nano output.txt
+```
 
 ## Old version notes
 
