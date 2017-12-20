@@ -7,6 +7,8 @@ long int zeroValue;
 
 static int MOTOR_STEP_PIN = 13;
 static int MOTOR_DIR_PIN = 12;
+static int LED_HIGH_PIN = 23;
+static int LED_LOW_PIN = 25;
 
 #include <TimerThree.h>
 static double stepperPosCM, desiredPosCM;
@@ -23,6 +25,8 @@ unsigned long timeStarted = 0;
 void setup() {
   pinMode(MOTOR_STEP_PIN, OUTPUT);
   pinMode(MOTOR_DIR_PIN, OUTPUT);
+  pinMode(LED_HIGH_PIN, OUTPUT);
+  pinMode(LED_LOW_PIN, OUTPUT);
   Serial.begin(115200);
   delay(250);
   zeroScale();
@@ -105,7 +109,9 @@ void interpretCommand() {
         double pos = Serial.parseFloat();
         if (!timeStarted) {
           // on first move, update start time
+          // and turn on light
           timeStarted = micros();
+          digitalWrite(LED_HIGH_PIN, HIGH);
         }
         desiredPosCM = pos;
         desiredPosTicks = TICKS_PER_CM * desiredPosCM;
