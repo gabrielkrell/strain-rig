@@ -2,7 +2,7 @@
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A0, A1);
-float TICKS_PER_GRAM = 720000 / 50; // experimentally determined? 720k = 50g
+float TICKS_PER_GRAM = 983.3473874; // experimentally determined
 long int zeroValue;
 
 static int LIMIT_SWITCH_UP = 2;
@@ -14,6 +14,8 @@ static int LIMIT_SWITCH_DN_0V = 7;
 
 static int MOTOR_STEP_PIN = 13;
 static int MOTOR_DIR_PIN = 12;
+static int LED_HIGH_PIN = 23;
+static int LED_LOW_PIN = 25;
 
 #include <TimerThree.h>
 static double stepperPosCM, desiredPosCM;
@@ -25,13 +27,13 @@ static int    TICKS_PER_CM = 4000; // 10/4*200*8
 static double CMS_PER_TICK = 0.0025; // (1/4000)
 static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
-double ABS_MAX_TRAVEL = 10.3; // max travel length (cm)
-
 unsigned long timeStarted = 0;
 
 void setup() {
   pinMode(MOTOR_STEP_PIN, OUTPUT);
   pinMode(MOTOR_DIR_PIN, OUTPUT);
+  pinMode(LED_HIGH_PIN, OUTPUT);
+  pinMode(LED_LOW_PIN, OUTPUT);
   Serial.begin(115200);
   delay(250);
   zeroScale();
@@ -120,12 +122,11 @@ void interpretCommand() {
           break; // missing position
         }
         double pos = Serial.parseFloat();
-        if (abs(pos) >= ABS_MAX_TRAVEL) {
-          break; // too far
-        }
         if (!timeStarted) {
           // on first move, update start time
+          // and turn on light
           timeStarted = micros();
+          digitalWrite(LED_HIGH_PIN, HIGH);
         }
         desiredPosCM = pos;
         desiredPosTicks = TICKS_PER_CM * desiredPosCM;
