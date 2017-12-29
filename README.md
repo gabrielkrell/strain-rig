@@ -12,7 +12,7 @@ Parts:
  - [Linear screw](https://www.smw3d.com/sfu-1204-ball-screw-and-flanged-nut/): 4mm lead. See [ball screw guide](http://www.anaheimautomation.com/manuals/forms/ball-screw-guide.php#sthash.fK6LyzyL.WL0C372z.dpbs).
 
 Interaction over serial:
- - Input `m12.3456789`: change setpoint to input number in cm.
+ - Input `m12.3456789`: move up by input number in cm. Negative (down) allowed.
  - Input `z`: Zero the force sensor.
 
 ## To compile:
@@ -49,7 +49,7 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 5. You can check the latest output with `tail`:
 
    `tail output.txt`
-6. You can write to the Arduino like you would any file or device. For example, to move to the 3cm position:
+6. You can write to the Arduino like you would any file or device. For example, to move up by 3cm:
 
    `echo "m3" > /dev/ttyACM0`
 
@@ -75,8 +75,8 @@ Time (micros): 2956144 Position (cm): 1.00 Force (g): 0.14
 [...]
 Time (micros): 3695104 Position (cm): 1.00 Force (g): 0.19
 gabe@dormserver:~$ echo "m2" > /dev/ttyACM0
-gabe@dormserver:~$ echo "m5.9" > /dev/ttyACM0
-gabe@dormserver:~$ echo "m0" > /dev/ttyACM0
+gabe@dormserver:~$ echo "m.5" > /dev/ttyACM0
+gabe@dormserver:~$ echo "m-3.5" > /dev/ttyACM0
 gabe@dormserver:~$ fg
 cat /dev/ttyACM0 > output.txt
 ^C

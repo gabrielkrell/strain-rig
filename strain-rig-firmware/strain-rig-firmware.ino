@@ -104,7 +104,7 @@ void interpretCommand() {
       case 'm':
       case 'M': {
         if (!Serial.available()) {
-          break; // missing position
+          break; // no distance sent
         }
         double pos = Serial.parseFloat();
         if (!timeStarted) {
@@ -113,7 +113,7 @@ void interpretCommand() {
           timeStarted = micros();
           digitalWrite(LED_HIGH_PIN, HIGH);
         }
-        desiredPosCM = pos;
+        desiredPosCM += pos;
         desiredPosTicks = TICKS_PER_CM * desiredPosCM;
         break;
       }
