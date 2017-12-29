@@ -17,7 +17,6 @@ volatile long int stepperPosTicks;
 // tick constants: 10 mm / cm, 1 revolution / 4 mm linear movement,
 //                 200 steps / 1 revolution, 8 microsteps / 1 step
 static int    TICKS_PER_CM = 4000; // 10/4*200*8
-static double CMS_PER_TICK = 0.0025; // (1/4000)
 static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
 unsigned long timeStarted = 0;
