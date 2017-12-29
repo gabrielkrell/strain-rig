@@ -76,6 +76,7 @@ void motorISR() {
     nextTick = -1;
   } else {
     nextTick = 0;
+    digitalWrite(LED_HIGH_PIN, LOW); // we're done
     return;
   }
 
@@ -109,10 +110,9 @@ void interpretCommand() {
         double pos = Serial.parseFloat();
         if (!timeStarted) {
           // on first move, update start time
-          // and turn on light
           timeStarted = micros();
-          digitalWrite(LED_HIGH_PIN, HIGH);
         }
+        digitalWrite(LED_HIGH_PIN, HIGH);
         desiredPosCM += pos;
         desiredPosTicks = TICKS_PER_CM * desiredPosCM;
         break;
