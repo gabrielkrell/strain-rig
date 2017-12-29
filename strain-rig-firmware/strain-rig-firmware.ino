@@ -30,7 +30,7 @@ void setup() {
   Serial.begin(115200);
   delay(250);
   zeroScale();
-  Timer3.initialize(80);
+  Timer3.initialize(800); // in micros; max speed is 80
   Timer3.attachInterrupt(motorISR);
 }
 
