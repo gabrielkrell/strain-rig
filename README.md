@@ -38,7 +38,6 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 
    `sudo usermod -a -G dialout gabe`
 
-   You may need to log out and log in again for this to take effect.
 3. Now, set the tty parameters with `stty` (replacing `/dev/ttyACM0` with whatever your device is called):
 
    ```
@@ -83,19 +82,6 @@ cat /dev/ttyACM0 > output.txt
 ^C
 gabe@dormserver:~$ nano output.txt
 ```
-
-## Old version notes
-
-Components:
- - Arduino Nano - controls other peripherals, manages UI. Uses [Arduino-PID-Library](https://github.com/br3ttb/Arduino-PID-Library)
- - HX711 - 24-bit ADC used to read force sensor. Uses [Queuetue HX711 library](https://github.com/queuetue/Q2-HX711-Arduino-Library/).
- - Motor driver board with L298N: drives stepper motor.
- 
-Interaction over serial:
- - Input `m123456.789`: change setpoint to input number (in mm?).
- - Input `z`: Zero the force sensor.
-
-Extra compilation steps: install the [Arduino-PID-Library](https://github.com/br3ttb/Arduino-PID-Library) (Library Manager > PID by Brett Beauregard)
 
 ## Notes on calibration:
 
