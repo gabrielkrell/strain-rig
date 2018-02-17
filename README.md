@@ -38,6 +38,7 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 
    `sudo usermod -a -G dialout gabe`
 
+   You may need to log out and log in again for this to take effect.  You only need to do this once.
 3. Now, set the tty parameters with `stty` (replacing `/dev/ttyACM0` with whatever your device is called):
 
    ```
@@ -46,7 +47,7 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 4. Now that the Arduino is attached, start saving the output in the background.  You can read from `/dev/ttyACM0` (or whatever the device is) like a normal file.  For example:
 
    `cat /dev/ttyACM0 > output.txt &`
-5. You can check the latest output with `tail`:
+5. You can check the latest output with `tail`, or view a continuous feed with `tail -f`:
 
    `tail output.txt`
 6. You can write to the Arduino like you would any file or device. For example, to move up by 3cm:
