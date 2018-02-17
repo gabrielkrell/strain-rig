@@ -17,6 +17,7 @@ Interaction over serial:
 
 ## To compile:
 1. Install the [Queuetue HX711 library](https://github.com/queuetue/Q2-HX711-Arduino-Library/) (Library Manager > Queuetue HX711 library).
+1. Install the [TimerThree library](https://github.com/PaulStoffregen/TimerThree) (Library Manager > TimerThree).
 
 ## Linux usage instructions
 
