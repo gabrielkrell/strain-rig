@@ -41,7 +41,7 @@ The actual UI isn't done yet, but you can still use it with the command line. To
 3. Now, set the tty parameters with `stty` (replacing `/dev/ttyACM0` with whatever your device is called):
 
    ```
-   sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl
+   sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl min 1
    ```
 4. Now that the Arduino is attached, start saving the output in the background.  You can read from `/dev/ttyACM0` (or whatever the device is) like a normal file.  For example:
 
@@ -64,7 +64,7 @@ gabe@dormserver:~$ dmesg | grep tty
 [    0.000000] console [tty0] enabled
 [459805.013211] cdc_acm 3-2:1.0: ttyACM0: USB ACM device
 gabe@dormserver:~$ sudo usermod -a -G dialout gabe
-gabe@dormserver:~$ sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl
+gabe@dormserver:~$ sudo stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts -hupcl min 1
 gabe@dormserver:~$ cat /dev/ttyACM0 > output.txt &
 [1] 30271
 gabe@dormserver:~$ echo "z" > /dev/ttyACM0
