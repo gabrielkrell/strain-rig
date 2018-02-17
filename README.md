@@ -19,9 +19,11 @@ Interaction over serial:
 1. Install the [Queuetue HX711 library](https://github.com/queuetue/Q2-HX711-Arduino-Library/) (Library Manager > Queuetue HX711 library).
 1. Install the [TimerThree library](https://github.com/PaulStoffregen/TimerThree) (Library Manager > TimerThree).
 
+Before uploading to the board, you'll need to remove the capacitor between GND and RESET.  That prevents accidental resets.  You can put it back once you've uploaded.
+
 ## Linux usage instructions
 
-The actual UI isn't done yet, but you can still use it with the command line. To use on Linux, you can install the Arduino IDE (probably), or just use built-in terminal stuff:
+To use on Linux, you can install the Arduino IDE, or just use built-in terminal stuff:
 
 1. Plug in the Arduino, and figure out which port it's on:
    `$ dmesg | grep tty`
