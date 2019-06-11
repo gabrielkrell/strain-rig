@@ -11,12 +11,13 @@ static int LED_HIGH_PIN = 23;
 static int LED_LOW_PIN = 25;
 
 #include <TimerThree.h>
-static double stepperPosCM, desiredPosCM;
+static double stepperPosMM, desiredPosMM;
 volatile long int stepperPosTicks;
          long int desiredPosTicks;
-// tick constants: 10 mm / cm, 1 revolution / 4 mm linear movement,
+// tick constants: 1 revolution / 4 mm linear movement,
 //                 200 steps / 1 revolution, 8 microsteps / 1 step
-static int TICKS_PER_CM = 10 / 4 * 200 * 8;
+static int    TICKS_PER_MM = 200 * 8 / 4; // re-ordered because compiler is bad
+static double MMs_PER_TICK = 1.0 / 8 / 200 * 4;
 static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
 unsigned long timeStarted = 0;
@@ -38,17 +39,17 @@ void loop() {
   unsigned long time_ = timeStarted > 0 ? micros() - timeStarted : 0;
   long int ticks = stepperPosTicks; // copy volatile var
   double force = readForce(zeroValue);
-  stepperPosCM = .00025 * ticks;
+  stepperPosMM = ticks * MMs_PER_TICK;
   
   Serial.print("Time (micros): ");
   Serial.print(time_);
-  Serial.print(" Position (cm): ");
-  Serial.print(stepperPosCM);
+  Serial.print(" Position (mm): ");
+  Serial.print(stepperPosMM);
   Serial.print(" Force (g): ");
   Serial.print(force);
   #ifdef DEBUG_MODE
-    Serial.print(" Target Pos. (cm): ");
-    Serial.print(desiredPosCM);
+    Serial.print(" Target Pos. (mm): ");
+    Serial.print(desiredPosMM);
     Serial.print(" Ticks: ");
     Serial.print(ticks);
     Serial.print(" Target Ticks: ");
@@ -112,8 +113,8 @@ void interpretCommand() {
           timeStarted = micros();
         }
         digitalWrite(LED_HIGH_PIN, HIGH);
-        desiredPosCM += pos;
-        desiredPosTicks = TICKS_PER_CM * desiredPosCM;
+        desiredPosMM += pos;
+        desiredPosTicks = TICKS_PER_MM * desiredPosMM;
         break;
       }
       case 'z':
