@@ -2,23 +2,23 @@
 
 #include <Q2HX711.h>
 Q2HX711 hx711(A0, A1);
-float TICKS_PER_GRAM = 983.3473874; // experimentally determined
+const float TICKS_PER_GRAM = 983.3473874; // experimentally determined
 long int zeroValue;
 
-static int MOTOR_STEP_PIN = 13;
-static int MOTOR_DIR_PIN = 12;
-static int LED_HIGH_PIN = 23;
-static int LED_LOW_PIN = 25;
+const byte MOTOR_STEP_PIN = 13;
+const byte MOTOR_DIR_PIN = 12;
+const byte LED_HIGH_PIN = 23;
+const byte LED_LOW_PIN = 25;
 
 #include <TimerThree.h>
-static double stepperPosMM, desiredPosMM;
+double stepperPosMM, desiredPosMM;
 volatile long int stepperPosTicks;
          long int desiredPosTicks;
 // tick constants: 1 revolution / 4 mm linear movement,
 //                 200 steps / 1 revolution, 8 microsteps / 1 step
-static int    TICKS_PER_MM = 200 * 8 / 4; // re-ordered because compiler is bad
-static double MMs_PER_TICK = 1.0 / 8 / 200 * 4;
-static int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
+const int    TICKS_PER_MM = 200 * 8 / 4; // re-ordered because compiler is bad
+const double MMs_PER_TICK = 1.0 / 8 / 200 * 4;
+const int TURNAROUND_DELAY_CYCLES = 1000; // cycles to wait before reversing
 
 unsigned long timeStarted = 0;
 
