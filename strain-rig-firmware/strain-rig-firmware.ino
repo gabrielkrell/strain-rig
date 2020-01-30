@@ -49,7 +49,7 @@ void loop() {
   Serial.print("Time (micros): ");
   Serial.print(time_);
   Serial.print(" Position (mm): ");
-  Serial.print(stepperPosMM);
+  Serial.print(stepperPosMM, 4);
   Serial.print(" Force (g): ");
   Serial.print(forceG);
   #ifdef DEBUG_MODE
